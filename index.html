@@ -1,0 +1,325 @@
+<html>
+<head>
+<meta encoding=utf-8>
+<title>s</title>
+<style>
+    .box {
+  margin: 30px;
+  height: 50px;
+  width: 50px;
+  background-color: blue;
+}
+.box.horizTranslate {
+  -webkit-transition: 3s;
+  -moz-transition: 3s;
+  -ms-transition: 3s;
+  -o-transition: 3s;
+  transition: 3s;
+  margin-left: 50% !important;
+}
+</style>
+<script language="javascript">
+var myswitch = false;
+var nr_places = 20;
+var nr_free_places = 0;
+var places = new Array();
+var empty = new Image();
+var msit = new Image();
+var fsit = new Image();
+var mstand = new Image();
+var fstand = new Image();
+    empty.src = "./1px.png";
+    msit.src = "./m-sit.png";
+    fsit.src = "./f-sit.png";
+    mstand.src = "./m-stand.png";
+    fstand.src = "./f-stand.png";
+var passengers = 0;
+
+function init() {
+    free_places = 0;
+    passengers = 0;
+    if (myswitch) toggle();
+    nr_places = document.getElementById("seats").value;
+    var table = document.getElementById("MyTable");
+    table.deleteRow(0); //just in case;
+    var row = table.insertRow(0); // recreate;
+    var x = row.insertCell(-1);
+    x.setAttribute('id', "entrance");
+    x.style.backgroundColor = "#00ff00";
+    x.innerHTML="&nbsp;";
+//document.getElementsByTagName("tr")[0];
+    if (document.getElementById('common') != null) { var element = document.getElementById('common');
+        element.parentNode.removeChild(element);
+    }
+    var iDiv_common = document.createElement('div');
+    document.getElementsByTagName('body')[0].appendChild(iDiv_common);
+    iDiv_common.id = "common";
+    for ( i = 0; i < nr_places; i++ ) {
+        x = row.insertCell(-1);
+        x.innerHTML="&nbsp;";
+        x.setAttribute('id', i);
+        x.style.backgroundColor = "#ff0000";    
+        var iDiv = document.createElement('div');
+        iDiv.id = 'seat' + i;
+        document.getElementById('common').appendChild(iDiv);
+        document.getElementById(iDiv.id).style.position="absolute";
+        document.getElementById(iDiv.id).style.top="334px";
+        document.getElementById(iDiv.id).style.left=200 + 50*i +"px";
+        document.getElementById(iDiv.id).style.width="50px";
+        document.getElementById(iDiv.id).style.height="75px";
+        document.getElementById(iDiv.id).style.backgroundImage = "url(./seat.png)";
+        var iDiv2 = document.createElement('div');
+        iDiv2.id = 'person' + i;
+        document.getElementsByTagName('body')[0].appendChild(iDiv2);
+        document.getElementById(iDiv2.id).style.position="absolute";
+        document.getElementById(iDiv2.id).style.top="272px";
+        document.getElementById(iDiv2.id).style.left=175 + 50*i +"px";
+        document.getElementById(iDiv2.id).style.width="100px";
+        document.getElementById(iDiv2.id).style.height="200px";
+        document.getElementById(iDiv2.id).style.backgroundImage = "url(" + empty.src + ")";
+        document.getElementById(iDiv2.id).style.zIndex = "100";
+        clear(i);
+    }
+    document.getElementById("window").style.width=50*i + "px";
+    document.getElementById("under-seat").style.width=50*i + "px";
+    document.getElementById("span1").innerHTML = "0";
+    document.getElementById("span2").innerHTML = "";
+    document.getElementById("span3").innerHTML = nr_places;
+    score();
+}
+
+function go() {
+    if ( myswitch ) {
+	var myspan = document.getElementById("span1").innerHTML;
+/*
+	if ( myspan == "1" ) document.getElementById("span1").innerHTML = 0;
+        else document.getElementById("span1").innerHTML = 1;
+*/
+        var step = inorout();
+	if ( step ) {
+	    console.log("A passenger entered");
+	    passengers++;
+
+            if ( Math.round(Math.random()) ) {
+		console.log("It's a male");
+		document.getElementById("span2").innerHTML = "Male";
+		/*
+		document.getElementById("entrance").innerHTML = "M";
+		document.getElementById("entrance").style.backgroundColor = "#0000ff";
+		*/
+                //document.getElementById("door-person").style.backgroundImage = "url(" + mstand.src + ")";
+		mstrategy();
+	    }
+	    else {
+		console.log("It's a female");
+		document.getElementById("span2").innerHTML = "Female";
+		/*
+		document.getElementById("entrance").innerHTML = "F";
+		document.getElementById("entrance").style.backgroundColor = "#ff0000";
+		*/
+                //document.getElementById("door-person").style.backgroundImage = "url(" + fstand.src + ")";
+		fstrategy();
+	    }
+	    /*
+	    setTimeout(function(){
+		document.getElementById("entrance").innerHTML = "N";
+		document.getElementById("entrance").style.backgroundColor = "#00ff00";
+	    }, 500);
+	    */
+	    ;
+
+	}
+	else {
+	    console.log("A passenger got off");
+	    passengers--;
+	    free();
+	}
+
+	document.getElementById("span1").innerHTML = passengers;
+	console.log("Counting free places");
+	nr_free_places = findfree().length;
+	console.log(nr_free_places + " found.");
+	document.getElementById("span3").innerHTML = nr_free_places;
+        score();
+    }
+}
+
+function inorout() {
+    var rand = Math.floor((Math.random() * nr_places) + 1);
+    if ( passengers < rand ) return true;
+    else return false;
+}
+
+function toggle() {
+    var btn = document.getElementById("mybutton");
+    if ( btn.value == "Start" ) btn.value = "Stop";
+    else btn.value = "Start";
+    myswitch = !myswitch;
+}
+
+function clear(n) {
+    places[n] = "N";
+    document.getElementById(n).innerHTML = "N";
+    document.getElementById(n).style.backgroundColor = "#00ff00";
+    document.getElementById("person" + n).style.backgroundImage = "url(" + empty.src + ")";
+}
+
+function find2f() {
+    console.log("Looking for a place b/n two females");
+    var results = new Array();
+    for ( i = 1; i < (nr_places-1); i++ ) {
+	if ( document.getElementById(i-1).innerHTML == "F" && document.getElementById(i).innerHTML == "N" && document.getElementById(i+1).innerHTML == "F" ) results.push(i);
+    }
+    return results;
+}
+
+function find1f() {
+    console.log("Looking for a place next to a female");
+    var results = new Array();
+    for ( i = 0; i < nr_places; i++ ) {
+	if ( document.getElementById(i-1) != null && document.getElementById(i+1) != null && document.getElementById(i).innerHTML == "N" && ( document.getElementById(i-1).innerHTML == "F" || document.getElementById(i+1).innerHTML == "F" ) ) results.push(i);
+	//}
+    }
+    return results;
+}
+
+function findfar() {
+    console.log("Looking for a place far from anyone");
+    var results = new Array();
+    for ( i = 1; i < (nr_places - 1); i++ ) {
+	if ( document.getElementById(i-1).innerHTML == "N" && document.getElementById(i).innerHTML == "N" && document.getElementById(i+1).innerHTML == "N" ) results.push(i);
+    }
+    return results;
+}
+
+function findfree() {
+    console.log("Looking for a place, any place");
+    var results = new Array();
+    for ( i = 0; i < nr_places; i++ ) {
+	if ( document.getElementById(i).innerHTML == "N" ) results.push(i);
+    }
+    return results;
+}
+
+function mstrategy() {
+    console.log("He's looking for a seat");
+    var results = find2f();
+    if ( results.length == 0 ) {
+	console.log("Nothing found");
+	results = find1f();
+    }
+    if ( results.length == 0 ) {
+	console.log("Nothing found");
+	results = findfar();
+    }
+    if ( results.length == 0 ) {
+	console.log("Nothing found");
+	results = findfree();
+    }
+    console.log("Found " + results.length + " places.");
+    var choice = Math.floor(Math.random() * results.length);
+    seat(results[choice], "M");
+}
+
+function fstrategy() {
+    var results = findfar();
+    if ( results.length == 0 ) results = find2f();
+    if ( results.length == 0 ) results = find1f();
+    if ( results.length == 0 ) results = findfree();
+    var choice = Math.floor(Math.random() * results.length);
+    seat(results[choice], "F");
+}
+
+function seat(n, G) {
+    console.log(G + " is seating");
+    places[n] = G;
+    document.getElementById(n).innerHTML = G;
+    if ( G == "M" ) {
+	document.getElementById(n).style.backgroundColor = "#0000ff";
+        document.getElementById("person" + n).style.backgroundImage = "url(" + msit.src + ")";
+    }
+    else {
+	document.getElementById(n).style.backgroundColor = "#ff0000";
+        document.getElementById("person" + n).style.backgroundImage = "url(" + fsit.src + ")";
+    }
+}
+
+function free() {
+    var free_places = new Array();
+    for ( i = 0; i < nr_places; i++ ) {
+	if ( document.getElementById(i).innerHTML != "N" ) free_places.push(i);
+    }
+    nr_free_places = free_places.length;
+    console.log("Found " + nr_free_places + " free places");
+    document.getElementById("span3").innerHTML = nr_free_places;
+
+    var choice = Math.floor(Math.random() * free_places.length);
+    clear(free_places[choice]);
+}
+
+function search_score_table(A, B) {
+    switch (A) {
+        case "N": switch (B) {
+                case "N": return 0;
+                case "M": return 1;
+                case "F": return 2;
+            };
+            break;
+        case "M": switch (B) {
+                case "M": return 0;
+                case "F": return 2;
+                default: return -1;
+            };
+            break;
+        case "F": switch (B) {
+                case "F": return 2;
+                default: return -1;
+            };
+            break;
+        default: return -1;
+    }        
+    
+}
+
+function score() {
+    var total = 0;
+    var temp;
+    switch (document.getElementById("0").innerHTML) {
+        case "M": total+=1; break;
+        case "F": total+=2; break;
+    }
+    switch (document.getElementById(nr_places-1).innerHTML) {
+        case "M": total+=1; break;
+        case "F": total+=2; break;
+    }
+
+    for ( i = 0; i < (nr_places-1); i++) {
+        temp = search_score_table(document.getElementById(i).innerHTML, document.getElementById(i+1).innerHTML);
+        console.log("temp = " + temp);
+        if (temp == -1) temp = search_score_table(document.getElementById(i+1).innerHTML, document.getElementById(i).innerHTML);
+        total+=temp;
+    }
+    document.getElementById("span4").innerHTML = total;
+}
+
+
+var myVar = window.setInterval(function() {go()}, 1000);
+</script>
+</head>
+<body onload="init();">
+Seats: <input type="text" id="seats" value="10"/><input type="button" id="generate" value="Regenerate train" onclick="init();"></br>
+Passengers: <span id="span1">0</span><br>
+Last passenger: <span id="span2"></span><br>
+Free seats: <span id="span3"></span><br>
+Score: <span id="span4"></span></br>
+<table id="MyTable">
+<tr>
+</tr>
+</table>
+<input type="button" id="mybutton" value="Start" onclick="toggle();">
+<div id="door" style="position: absolute; top: 200px; left: 0px; background-image:url(./door.png); width:200px; height:254px;"></div>
+<div id="door-person" style="position: absolute; top: 200px; left: 0px; background-image:url(./1px.png); width:200px; height:254px;"></div>
+<div id="window" style="position: absolute; top: 200px; left: 200px; background-image:url(./window.png); height: 139px; width: 1px;"></div>
+<div id="under-seat" style="position: absolute; top: 409px; left: 200px; background-image:url(./under-seat.png); width: 1px; height: 45px;"></div>
+</body>
+</html>

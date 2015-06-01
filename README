@@ -1,0 +1,24 @@
+Description
+
+This is a train car simulator. New passengers (men and women) get on one by one,
+choose a place, and have a sit. After some time a passenger vacates his/her seat
+and gets off. The most interesting thing is how they make their choices.
+
+At this point there are two strategies: a "male" and a "female" one (N.B.: this 
+is just a name, no relation with the real-life behavior).
+
+Male behavior:
+* Sit between two women. If not possible, then
+* Sit next to a woman (regardless of the other seat). If not possible, then
+* Sit between two empty seats. If not possible, then
+* Just sit somewhere.
+
+Female behavior:
+* Sit between two empty seats. If not possible, then
+* Sit between two women. If not possible, then
+* Sit next to a woman (regardless of the other seat). If not possible, then
+* Just sit somewhere.
+
+It would be fun to:
+* Introduce more types of passengers.
+* 

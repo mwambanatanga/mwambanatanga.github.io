@@ -1,0 +1,28 @@
+<html>
+<head>
+<title>1</title>
+<script>
+function init() {
+    for (i=0; i<=2; i++) {
+        var MyDiv = document.createElement('div');
+        MyDiv.id = "Babylon-" + i;
+        document.getElementById('common').appendChild(MyDiv);
+        document.getElementById(MyDiv.id).style.backgroundColor = "blue";
+        document.getElementById(MyDiv.id).style.width="50px";
+        document.getElementById(MyDiv.id).style.height="75px";
+        document.getElementById(MyDiv.id).setAttribute("onclick", "select('" + MyDiv.id + "')");
+    }
+}
+
+function select(id) {
+    //window.alert(id);
+    //window.alert(document.getElementById(MyDiv.id).style.backgroundColor);
+    if (document.getElementById(id).style.backgroundColor == "red") document.getElementById(id).style.backgroundColor = "blue";
+    else document.getElementById(id).style.backgroundColor = "red";
+}
+</script>
+</head>
+<body onload="init();">
+<div id="common"></div>
+</body>
+</html>
